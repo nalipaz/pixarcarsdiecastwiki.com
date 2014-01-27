@@ -1,0 +1,5 @@
+name = Cars Miscellaneous
+description = Miscellaneous code changes for the Pixar Cars Diecast Wiki
+core = 7.x
+project = "cars_misc"
+dependencies[] = views_access_callback

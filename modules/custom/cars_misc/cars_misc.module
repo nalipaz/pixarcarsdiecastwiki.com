@@ -1,0 +1,114 @@
+<?php
+
+function cars_misc_block_view_taxonomy_filter_refine_alter(&$data, $block) {
+  $tids = explode(',', arg(2));
+  $tid = $tids[0];
+  $term = taxonomy_term_load($tid);
+  $vocab_id = (is_object($term)) ? $term->vid : FALSE;
+
+  if ($vocab_id) {
+    switch($vocab_id) {
+      case '2':
+        $url = 'releases';
+        break;
+      default:
+        $url = 'vehicles';
+        break;
+    }
+
+    $clear_link = l('Clear filters', $url);
+    $data['content'] = '<p>' . $clear_link . '</p>' . $data['content'];
+  }
+}
+
+/**
+ * Implements hook_flagging_form_link_alter().
+ *
+ * Detect when a flagging link is on the page and add our JS/CSS.
+ */
+function cars_misc_flagging_form_link_alter(&$link, $flag) {
+  if ($flag->form_interaction == 'flagging_dialog') {
+    drupal_add_library('cars_misc', 'cars_misc');
+  }
+}
+
+/**
+ * Implements hook_library().
+ */
+function cars_misc_library() {
+  $libraries['cars_misc'] = array(
+    'title' => 'Cars Misc',
+    'version' => '1.0',
+    'js' => array(
+      drupal_get_path('module', 'cars_misc') . '/cars_misc.js' => array('group' => JS_DEFAULT),
+    ),
+    'dependencies' => array(
+      array('flagging_dialog', 'flagging_dialog'),
+    ),
+  );
+
+  return $libraries;
+}
+
+function cars_misc_admin_paths_alter(&$paths) {
+  // Treat all user pages as not administrative.
+  $paths['user/*/edit'] = FALSE;
+}
+
+function cars_misc_views_access_callbacks() {
+  return array(
+    'cars_misc_can_access_missing_pages' => t('Can access missing pages'),
+  );
+}
+
+function cars_misc_can_access_missing_pages($uid) {
+  global $user;
+
+  if ($uid === variable_get('me_alias', 'me') && $user->uid > 0) {
+    return TRUE;
+  }
+
+  return $user->uid == $uid;
+}
+
+function cars_misc_form_flagging_form_flagging_delete_form_alter(&$form, &$form_state, $form_id) {
+  $entity_type = $form_state['build_info']['args'][0]->entity_type;
+  $entity_id = $form_state['build_info']['args'][0]->entity_id;
+  $form['entity_type'] = array(
+    '#type' => 'hidden',
+    '#value' => $entity_type,
+    '#attributes' => array('id' => 'flagging-dialog-entity-type'),
+  );
+  $form['entity_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $entity_id,
+    '#attributes' => array('id' => 'flagging-dialog-entity-id'),
+  );
+}
+
+function cars_misc_form_flagging_form_flagging_form_alter(&$form, &$form_state, $form_id) {
+  // Hide browser's autocomplete for this modal form since it acts weird.
+  $form['field_note']['und'][0]['value']['#attributes']['autocomplete'] = 'off';
+}
+
+function cars_misc_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'cars_misc'),
+  );
+}
+
+function cars_misc_form_release_node_form_alter(&$form, &$form_state, $form_id) {
+  // Alter Release form to set all the buttons and labels with their content type labels in embedded forms.
+  $form['field_vehicles']['und']['actions']['ief_add']['#value'] = 'Add new vehicle';
+  $form['field_vehicles']['und']['actions']['ief_add_existing']['#value'] = 'Add existing vehicle';
+  $form['field_vehicles']['und']['form']['actions']['ief_add_save']['#value'] = 'Save vehicle';
+  $form['field_vehicles']['und']['form']['field_character']['und']['actions']['ief_add']['#value'] = 'Add new character';
+  $form['field_vehicles']['und']['form']['field_character']['und']['actions']['ief_add_existing']['#value'] = 'Add existing character';
+  $form['field_vehicles']['und']['form']['field_character']['und']['form']['actions']['ief_add_save']['#value'] = 'Save character';
+  $form['field_vehicles']['und']['form']['entity_id']['#title'] = 'Vehicle';
+  $form['field_vehicles']['und']['form']['actions']['ief_reference_save']['#value'] = 'Add Vehicle';
+  $form['field_vehicles']['und']['form']['field_character']['und']['form']['entity_id']['#title'] = 'Character';
+  $form['field_vehicles']['und']['form']['field_character']['und']['form']['actions']['ief_reference_save']['#value'] = 'Add Character';
+  
+}
