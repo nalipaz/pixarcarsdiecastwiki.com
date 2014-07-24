@@ -1,0 +1,12 @@
+name = System Status
+description = "Provides an overview of all the available updates for your Drupal website using an external service."
+core = 6.x
+configure = admin/config/system/system_status
+files[] = system_status_encryption.inc
+
+; Information added by Drupal.org packaging script on 2014-05-28
+version = "6.x-2.3"
+core = "6.x"
+project = "system_status"
+datestamp = "1401265734"
+

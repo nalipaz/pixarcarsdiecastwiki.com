@@ -1,0 +1,29 @@
+<?php
+/**
+ * @file
+ * Clean up file for system_status
+ */
+
+require_once ('system_status_encryption.inc');
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Removes all settings used by the module.
+ */
+function system_status_uninstall() {
+  variable_del('system_status_service_allow_drupalstatus');
+  variable_del('system_status_token');
+  variable_del('system_status_encrypt_token');
+}
+
+/**
+ * Implements hook_install().
+ *
+ * Creates a unique set of tokens for this installation.
+ */
+function system_status_install() {
+  variable_set('system_status_token', SystemStatusEncryption::getToken());
+  variable_set('system_status_encrypt_token', SystemStatusEncryption::getToken());
+}
+
